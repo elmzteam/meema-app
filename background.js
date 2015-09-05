@@ -16,8 +16,9 @@ chrome.app.runtime.onLaunched.addListener(function() {
 
 chrome.runtime.onMessageExternal.addListener(
 	function(request, sender, sendResponse) {
+		console.log(request);
 		if (sp && sp.commands[request.command] >= 0) {
-			sp.commands[request.command].apply(request.args.slice(0,sp.commands[request.command]).concat(function(err, result) {
+			sp[request.command].apply(this, request.args.slice(0,sp.commands[request.command]).concat(function(err, result) {
 				sendResponse({error: err, result: result});
 			}))
 		}
@@ -38,14 +39,14 @@ serialProxy = function() {
 
 	this.commands = {
 		onLoad: 0,
-		getDevice: 0,
-		getActiveAccount: 0,
-		getAccounts: 0,
-		authenticateAccount: 2,
-		fetchFragment: 1,
-		fetchFragmentList: 0,
-		createAccount: 2,
-		registerPassword: 2,
+		getDeviceUID: 0,
+		getActiveAccount: 0, // returns--string if signed in (username), otherwise error
+		getAccounts: 0, // returns--array of string (usernames)
+		authenticateAccount: 2, // args--- username, password, returns--success/fail boolean
+		fetchFragment: 1, // args--- hashed url, returns--string password fragment, error if not exist and not signed in
+		fetchFragmentList: 0, // returns--string array of hashed urls, error if not signed in
+		createAccount: 2, // args--- username, password, returns--true, error if exists
+		registerPassword: 2, // args--- url, password, returns--true
 	}
 
 	var onSend = function(){}
@@ -170,9 +171,12 @@ serialProxy = function() {
 	}
 	this.onLoad = function(cb) {
 		if (that.uid > 0) {
-			cb(that.uid)
+			cb(null, that.uid)
 		} else {
-			that.callbacks[0xFF] = cb;
+			that.callbacks[0xFF] = function() {
+				cb(null, true);
+			}
+			err(cb);
 		}
 	}
 	this.isUnlocked = function(cb) {
