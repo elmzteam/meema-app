@@ -20,12 +20,11 @@ var listener = function(request, sender, sendResponse) {
 	if (sp && sp.commands[request.command] >= 0) {
 		sp[request.command].apply(this, request.args.slice(0,sp.commands[request.command]).concat(
 		function(err, result) {
-			console.log(sender);
-			g2 = (sendResponse)
 			sendResponse({error: err, result: result});
 			
 		}))
 	}
+	return true;
 }
 var listenerInternal = function(request, sender, sendResponse) {
 	if (sp && sp.commands[request.command] >= 0) {
@@ -111,9 +110,8 @@ serialProxy = function() {
 
 			}
 			if (that.callbacks[array[1]]) {
-				var f = that.callbacks[array[1]];
-				delete that.callbacks[array[1]];
-				f(array);
+				console.log("Firing callback, ",that.callbacks[array[1]])
+				that.callbacks[array[1]](array);
 			}
 		}
 	}
@@ -224,21 +222,21 @@ serialProxy = function() {
 	this.getDeviceUID = function(cb) {
 		writeSerial([0x03]);
 		that.callbacks[0xF2] = function(row) {
-			cb(null, stringify(row.slice(0x04, 0x04+row[0x02]+row[0x03]*256)));
+			cb(null, stringify(row.slice(0x04, 0x04+row[0x03]+row[0x02]*256)));
 		}
 		err(cb);
 	}
 	this.getActiveAccount = function(cb) {
 		writeSerial([0x04]);
 		that.callbacks[0xF2] = function(row) {
-			cb(null, stringify(row.slice(0x04, 0x04+row[0x02]+row[0x03]*256)));
+			cb(null, stringify(row.slice(0x04, 0x04+row[0x03]+row[0x02]*256)));
 		}
 		err(cb);
 	}
 	this.getAccounts = function(cb) {
 		writeSerial([0x05]);
 		that.callbacks[0xF2] = function(row) {
-			cb(null,JSON.parse(stringify(row.slice(0x04, 0x04+row[0x02]+row[0x03]*256))))
+			cb(null,JSON.parse(stringify(row.slice(0x04, 0x04+row[0x03]+row[0x02]*256))))
 		}
 		err(cb);
 	}
@@ -252,7 +250,7 @@ serialProxy = function() {
 	this.fetchFragment = function(url, cb) {
 		writeSerial([0x07, url.length].concat(arrayify(url)));
 		that.callbacks[0xF2] = function(row) {
-			cb(null, stringify(row.slice(0x04, 0x04+row[0x02]+row[0x03]*256)));
+			cb(null, stringify(row.slice(0x04, 0x04+row[0x03]+row[0x02]*256)));
 		}
 		err(cb);
 	}
