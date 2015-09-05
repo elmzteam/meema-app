@@ -1,0 +1,14 @@
+{
+	"app": {
+		"background": {
+			"scripts": ["background.js"]
+		}
+	},
+	"manifest_version": 2,
+	"name": "Meema",
+	"version": "0.0.5",
+	"permissions": [
+		"serial"
+	]
+	
+}
