@@ -14,16 +14,35 @@ chrome.app.runtime.onLaunched.addListener(function() {
 	});
 });
 
-chrome.runtime.onMessageExternal.addListener(
-	function(request, sender, sendResponse) {
-		console.log(request);
-		if (sp && sp.commands[request.command] >= 0) {
-			sp[request.command].apply(this, request.args.slice(0,sp.commands[request.command]).concat(function(err, result) {
-				sendResponse({error: err, result: result});
-			}))
-		}
+
+
+var listener = function(request, sender, sendResponse) {
+	if (sp && sp.commands[request.command] >= 0) {
+		sp[request.command].apply(this, request.args.slice(0,sp.commands[request.command]).concat(
+		function(err, result) {
+			console.log(sender);
+			g2 = (sendResponse)
+			sendResponse({error: err, result: result});
+			
+		}))
 	}
-)
+}
+var listenerInternal = function(request, sender, sendResponse) {
+	if (sp && sp.commands[request.command] >= 0) {
+		sp[request.command].apply(this, request.args.slice(0,sp.commands[request.command]).concat(
+		function(err, result) {
+			console.log(sender);
+			g2 = (sendResponse)
+			sendResponse({error: err, result: result});
+			
+		}))
+	}
+}
+
+
+
+chrome.runtime.onMessageExternal.addListener(listener);
+chrome.runtime.onMessage.addListener(listenerInternal);
 
 
 var sp;
@@ -38,6 +57,7 @@ serialProxy = function() {
 	this.blocked = false;
 
 	this.commands = {
+		connect: 0,
 		onLoad: 0,
 		isUnlocked: 0,
 		getDeviceUID: 0,
@@ -54,14 +74,17 @@ serialProxy = function() {
 
 	var that = this;
 
-	var onGetDevices = function(ports) {
+	var onGetDevices = function(ports, cb) {
+		console.log(arguments)
 		for (var i=0; i<ports.length; i++) {
 			if (ports[i].path.indexOf("usbmodem") > 0 && ports[i].path.indexOf("tty") > 0) {
 				chrome.serial.connect(ports[i].path, {bitrate: 9600}, begin);
 				console.log(ports[i].path);
+				cb(null, true);
 				return;
 			}
 		}
+		cb(null, false);
 	}
 
 	var begin = function(info) {
@@ -96,7 +119,10 @@ serialProxy = function() {
 	}
 
 
-	chrome.serial.getDevices(onGetDevices);
+	chrome.serial.getDevices(function (ports) {
+			onGetDevices(ports, function() {})
+	});
+
 	chrome.serial.onReceive.addListener(commProxy);
 
 	var writeSerial=function(str) {
@@ -170,6 +196,14 @@ serialProxy = function() {
 			cb(2, null);
 		}
 	}
+
+	this.connect = function(cb) {
+		cb(null, "skary");
+		chrome.serial.getDevices(function (ports) {
+				onGetDevices(ports, cb)
+		});
+	}	
+
 	this.onLoad = function(cb) {
 		if (that.uid > 0) {
 			cb(null, that.uid)
