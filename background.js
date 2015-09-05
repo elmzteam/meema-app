@@ -39,6 +39,7 @@ serialProxy = function() {
 
 	this.commands = {
 		onLoad: 0,
+		isUnlocked: 0,
 		getDeviceUID: 0,
 		getActiveAccount: 0, // returns--string if signed in (username), otherwise error
 		getAccounts: 0, // returns--array of string (usernames)
