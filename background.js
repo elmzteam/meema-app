@@ -14,6 +14,17 @@ chrome.app.runtime.onLaunched.addListener(function() {
 	});
 });
 
+chrome.runtime.onMessageExternal.addListener(
+	function(request, sender, sendResponse) {
+		if (sp && sp.commands[request.command] >= 0) {
+			sp.commands[request.command].apply(request.args.slice(0,sp.commands[request.command]).concat(function(err, result) {
+				sendResponse({error: err, result: result});
+			}))
+		}
+	}
+)
+
+
 var sp;
 
 serialProxy = function() {
@@ -24,6 +35,18 @@ serialProxy = function() {
 	this.callbacks = {}
 
 	this.blocked = false;
+
+	this.commands = {
+		onLoad: 0,
+		getDevice: 0,
+		getActiveAccount: 0,
+		getAccounts: 0,
+		authenticateAccount: 2,
+		fetchFragment: 1,
+		fetchFragmentList: 0,
+		createAccount: 2,
+		registerPassword: 2,
+	}
 
 	var onSend = function(){}
 
