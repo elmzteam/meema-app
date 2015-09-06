@@ -37,6 +37,7 @@ var listenerInternal = function(request, sender, sendResponse) {
 			
 		}))
 	}
+	return true;
 }
 
 
@@ -98,7 +99,7 @@ serialProxy = function() {
 
 	
 	var commProxy = function(info) {
-		console.log("ANYTHING?")
+		console.log("comProxy info", info);
 		if(info.data) {
 			var array = arrayBufferToArray(info.data);
 			console.log(array);
@@ -141,7 +142,6 @@ serialProxy = function() {
 			console.log('typeof str is string');
 			chrome.serial.send(that.connectionId, convertStringToArrayBuffer(str), onSend);
 		} else {
-			console.log('not typeof string', arrayToBuffer(str));
 			chrome.serial.send(that.connectionId, arrayToBuffer(str), onSend);
 		}
 	}
@@ -169,6 +169,7 @@ serialProxy = function() {
 	}
 
 	var arrayToBuffer = function(arr) {
+		console.log("In>> "+arr)
 		arr.unshift(that.uid);
 		var buf=new ArrayBuffer(arr.length);
 		var bufView=new Uint8Array(buf);
@@ -235,8 +236,8 @@ serialProxy = function() {
 		writeSerial([0x03]);
 		console.log('get device UID');
 		that.callbacks[0xF2] = function(row) {
-			console.log(row);
-			cb(null, (stringify(row.slice(0x04, 0x04+row[0x03]+row[0x02]*256))));
+			console.log('inside getDeviceUID callback', row);
+			cb(null, stringify(row.slice(0x04, 0x04+row[0x03]+row[0x02]*256)));
 		}
 		err(cb);
 	}

@@ -5,7 +5,7 @@
 		}
 	},
 	"manifest_version": 2,
-	"name": "Meema",
+	"name": "MeemaApp",
 	"version": "0.0.5",
 	"permissions": [
 		"serial"
