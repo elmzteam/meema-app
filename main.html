@@ -1,13 +1,30 @@
 <html>
 	<head>
+		<script src="jquery.js"></script>
+		<script src="material.min.js"></script>
+		<link rel="stylesheet" href="icon.css">
+		<link rel="stylesheet" href="material.grey-light_blue.min.css" /> 
 		<link rel="stylesheet" href="styles.css">
 		<script src="script.js"></script>
-		<template type="text/html" id="no-connect">
 
-		</tempate>
+		<template name="load_screen" id="loading">
+			<div id="background" class="mdl-color--grey-300 mdl-color-text--accent">
+			
+				<div class="header">Welcome to Meema</div>
+
+				<div class="content">
+					<div class="center">
+						<div class="mdl-spinner mdl-js-spinner is-active" id="loading"></div>
+						<br>
+					</div>
+					<div class="help">Connecting...</div>
+				</div>
+				
+			</div>
+		</template>
 	</head>
 	<body>
-		<h1>Hello World</h1>
+
 	</body>
 </html>
 
