@@ -1,0 +1,38 @@
+@font-face {
+	font-family: Roboto;
+	src: url(Roboto-Regular.ttf);
+}
+
+@font-face {
+	font-family: Roboto;
+	src: url(Roboto-Bold.ttf);
+	font-weight: bold;
+}
+
+#background {
+	width: calc(100% - 60px);
+	height: calc(100% - 60px);
+	padding: 30px;
+	font-size: 40px;
+	font-weight: bold;
+	font-family: Roboto;
+}
+
+.center {
+	padding-top: 50px;
+	margin: auto auto;
+	width: 80px;
+	height: 80px;
+}
+
+.center > #loading {
+	width: 80px;
+	height: 80px;
+}
+
+.help {
+	font-size: 30px;
+	font-weight: normal;
+	text-align: right;
+	padding-top: 30px;
+}
