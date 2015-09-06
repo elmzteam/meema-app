@@ -17,6 +17,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
 
 
 var listener = function(request, sender, sendResponse) {
+	console.log(request)
 	if (sp && sp.commands[request.command] >= 0) {
 		sp[request.command].apply(this, request.args.slice(0,sp.commands[request.command]).concat(
 		function(err, result) {
@@ -80,6 +81,7 @@ serialProxy = function() {
 				chrome.serial.connect(ports[i].path, {bitrate: 9600}, begin);
 				console.log(ports[i].path);
 				cb(null, true);
+				that.connected = true;
 				return;
 			}
 		}
@@ -87,7 +89,6 @@ serialProxy = function() {
 	}
 
 	var begin = function(info) {
-		console.log(info);
 		if (info) {
 			that.connectionId = info.connectionId;
 		}
@@ -97,8 +98,10 @@ serialProxy = function() {
 
 	
 	var commProxy = function(info) {
+		console.log("ANYTHING?")
 		if(info.data) {
 			var array = arrayBufferToArray(info.data);
+			console.log(array);
 			if (array[0] != that.uid) {
 				return;
 			}
@@ -124,16 +127,21 @@ serialProxy = function() {
 	chrome.serial.onReceive.addListener(commProxy);
 
 	var writeSerial=function(str) {
+		console.log('in write serial', str);
 		if (that.blocked) {
+			console.log('blocked');
 			return -1;
 		}
 		that.blocked = true;
 		if (that.connectionId == null) {
+			console.log('connectionid = null');
 			return;
 		}
 		if (typeof str == "string") {
+			console.log('typeof str is string');
 			chrome.serial.send(that.connectionId, convertStringToArrayBuffer(str), onSend);
 		} else {
+			console.log('not typeof string', arrayToBuffer(str));
 			chrome.serial.send(that.connectionId, arrayToBuffer(str), onSend);
 		}
 	}
@@ -196,9 +204,12 @@ serialProxy = function() {
 	}
 
 	this.connect = function(cb) {
-		cb(null, "skary");
+		if (that.connected) {
+			cb(null, true);
+			return;
+		}
 		chrome.serial.getDevices(function (ports) {
-				onGetDevices(ports, cb)
+			onGetDevices(ports, cb)
 		});
 	}	
 
@@ -214,6 +225,7 @@ serialProxy = function() {
 	}
 	this.isUnlocked = function(cb) {
 		writeSerial([0x02]);
+		console.log("unlocked?");
 		that.callbacks[0xFE] = function(row) {
 			cb(null, row[2] ? true : false);
 		}
@@ -221,15 +233,20 @@ serialProxy = function() {
 	}
 	this.getDeviceUID = function(cb) {
 		writeSerial([0x03]);
+		console.log('get device UID');
 		that.callbacks[0xF2] = function(row) {
-			cb(null, stringify(row.slice(0x04, 0x04+row[0x03]+row[0x02]*256)));
+			console.log(row);
+			cb(null, (stringify(row.slice(0x04, 0x04+row[0x03]+row[0x02]*256))));
 		}
 		err(cb);
 	}
 	this.getActiveAccount = function(cb) {
 		writeSerial([0x04]);
 		that.callbacks[0xF2] = function(row) {
-			cb(null, stringify(row.slice(0x04, 0x04+row[0x03]+row[0x02]*256)));
+			console.log('row', row);
+			console.log('stringify', stringify(row.slice(0x04, 0x04+row[0x03]+row[0x02]*256)))
+			console.log('json parse stringify', JSON.parse(stringify(row.slice(0x04, 0x04+row[0x03]+row[0x02]*256))));
+			cb(null, JSON.parse(stringify(row.slice(0x04, 0x04+row[0x03]+row[0x02]*256))));
 		}
 		err(cb);
 	}
